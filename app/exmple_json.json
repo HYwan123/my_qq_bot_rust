@@ -1,0 +1,100 @@
+Object {
+    "meta_event_type": String("lifecycle"),
+    "post_type": String("meta_event"),
+    "self_id": Number(3801230796),
+    "sub_type": String("connect"),
+    "time": Number(1772108171),
+}收到心跳包
+Object {
+    "font": Number(14),
+    "message": Array [
+        Object {
+            "data": Object {
+                "text": String("test"),
+            },
+            "type": String("text"),
+        },
+    ],
+    "message_format": String("array"),
+    "message_id": Number(-1412452068),
+    "message_seq": Number(1356),
+    "message_type": String("private"),
+    "post_type": String("message"),
+    "raw_message": String("test"),
+    "raw_pb": String(""),
+    "self_id": Number(3801230796),
+    "sender": Object {
+        "card": String(""),
+        "nickname": String("wan"),
+        "user_id": Number(2801798663),
+    },
+    "sub_type": String("friend"),
+    "time": Number(1772108178),
+    "user_id": Number(2801798663),
+}Object {
+    "data": Object {
+        "message_id": Number(1887663443),
+    },
+    "echo": String("唯一标识，如 uuid"),
+    "message": String(""),
+    "retcode": Number(0),
+    "status": String("ok"),
+    "wording": String(""),
+}Object {
+    "font": Number(14),
+    "message": Array [
+        Object {
+            "data": Object {
+                "text": String("收到test"),
+            },
+            "type": String("text"),
+        },
+    ],
+    "message_format": String("array"),
+    "message_id": Number(1887663443),
+    "message_seq": Number(1357),
+    "message_type": String("private"),
+    "post_type": String("message_sent"),
+    "raw_message": String("收到test"),
+    "raw_pb": String(""),
+    "self_id": Number(3801230796),
+    "sender": Object {
+        "card": String(""),
+        "nickname": String("しろ"),
+        "user_id": Number(3801230796),
+    },
+    "sub_type": String("friend"),
+    "target_id": Number(2801798663),
+    "time": Number(1772108180),
+    "user_id": Number(3801230796),
+}收到返回包
+Object {
+    "font": Number(14),
+    "message": Array [
+        Object {
+            "data": Object {
+                "file": String("D447FD0F4D398191F269A492FBDAAF7F.jpg"),
+                "file_size": String("416098"),
+                "subType": Number(0),
+                "url": String("https://multimedia.nt.qq.com.cn/download?appid=1406&fileid=EhQ9h5mOgX60Zmyej7JPW7V0J0qzDRjishkg_goo-ZO4tpH3kgMyBHByb2RQgLsvWhCvghU3NevE3F2liFIm7Yw_egLFvoIBAm5q&spec=0&rkey=CAESMGmdCF0NKVOgVQ8KgBPQ0ezisKALcxqBa3c5lsuxDS714I2lWKQteLsh6MkfZ7xmeg"),
+            },
+            "type": String("image"),
+        },
+    ],
+    "message_format": String("array"),
+    "message_id": Number(-112866790),
+    "message_seq": Number(1358),
+    "message_type": String("private"),
+    "post_type": String("message"),
+    "raw_message": String("[CQ:image,file=D447FD0F4D398191F269A492FBDAAF7F.jpg,subType=0,url=https://multimedia.nt.qq.com.cn/download?appid=1406&amp;fileid=EhQ9h5mOgX60Zmyej7JPW7V0J0qzDRjishkg_goo-ZO4tpH3kgMyBHByb2RQgLsvWhCvghU3NevE3F2liFIm7Yw_egLFvoIBAm5q&amp;spec=0&amp;rkey=CAESMGmdCF0NKVOgVQ8KgBPQ0ezisKALcxqBa3c5lsuxDS714I2lWKQteLsh6MkfZ7xmeg,file_size=416098]"),
+    "raw_pb": String(""),
+    "self_id": Number(3801230796),
+    "sender": Object {
+        "card": String(""),
+        "nickname": String("wan"),
+        "user_id": Number(2801798663),
+    },
+    "sub_type": String("friend"),
+    "time": Number(1772108184),
+    "user_id": Number(2801798663),
+}

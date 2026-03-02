@@ -1,0 +1,36 @@
+{
+    "id": "chatcmpl-69a4c0956d1b90a78bce51e9",
+    "object": "chat.completion",
+    "created": 1772404885,
+    "model": "kimi-k2-0905",
+    "usage": {
+        "prompt_tokens": 47,
+        "completion_tokens": 17,
+        "total_tokens": 64
+    },
+    "extend_fields": {
+        "traceId": "2133ef1617724048851802000e1034",
+        "requestId": "46c8b298b4ef7d31ffa217dba996bc5f"
+    },
+    "choices": [
+        {
+            "index": 0,
+            "finish_reason": "tool_calls",
+            "message": {
+                "role": "assistant",
+                "content": "我来帮您查询今天的日期。",
+                "tool_calls": [
+                    {
+                        "index": 0,
+                        "id": "return_date:0",
+                        "type": "function",
+                        "function": {
+                            "arguments": "{}",
+                            "name": "return_date"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
