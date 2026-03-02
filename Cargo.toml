@@ -3,3 +3,4 @@ members = [
     "app",
     "iflow_client"
 ]
+resolver = "3"
