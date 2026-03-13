@@ -38,7 +38,7 @@ pub struct HeartBeat {
     pub meta_event_type: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UserMessage {
     pub time: u64,
     pub user_id: u64,
@@ -63,9 +63,11 @@ impl UserMessage {
         let text: String = match first_message {
             MessageItem::Text(text) => text.data.text.clone(),
             MessageItem::Image(_) => "这是一张图片".to_string(),
+            MessageItem::Mface(_) => "这是一张图片".to_string(),
         };
         text
     }
+
 
     pub fn get_role_message(&self) -> AiMessageItem {
         let text = self.get_first_text();
@@ -78,4 +80,5 @@ impl UserMessage {
 pub enum MessageItem {
     Text(TextMessage),
     Image(ImageMessage),
+    Mface(FaceMessage),
 }

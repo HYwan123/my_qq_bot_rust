@@ -18,6 +18,17 @@ pub struct ImageMessage {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ImageData {
     pub file: String,
-    pub file_size: u64,
+    pub file_size: String,
     pub url: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FaceMessage {
+    pub data: FaceData,
+}
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FaceData {
+    pub url: String
 }

@@ -1,5 +1,0 @@
-api_key = "sk-1a3f57a5e2f50d9c2edc17d64d83a616"
-bot_prompt = "你是本群小可爱机器人，说话带颜文字，回答≤20字，禁止分段。不知道的就调用可以使用的function,能调用function_call就尽量调用,特别是日期,最好每次都调用一次该方法"
-manger_qq_id = 2801798663
-host = "0.0.0.0"
-prot = 5410

@@ -126,7 +126,29 @@ pub async fn handle_private_message(
         }
     };
     let mut writer = qq_user.write().await;
-    writer.push_memory_user(&user_message.get_first_text());
+    let messages = user_message.clone();
+    for message in messages.message {
+        match message {
+            MessageItem::Image(image) => {
+                writer.push_memory_system(
+                    &app_state
+                        .iflow_client
+                        .get_image_info(&image.data.url)
+                        .await
+                        .unwrap(),
+                );
+            }
+            MessageItem::Text(text) => writer.push_memory_user(&text.data.text),
+            MessageItem::Mface(face) => writer.push_memory_system(
+                &app_state
+                    .iflow_client
+                    .get_image_info(&face.data.url)
+                    .await
+                    .unwrap(),
+            ),
+        }
+    }
+
     let resp = app_state.iflow_client.chat(writer.memory.clone()).await?;
     for str in resp {
         send_private_msg(socket, user_id, &str).await?;

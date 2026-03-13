@@ -24,7 +24,7 @@ impl OneBotState {
         let client = reqwest::Client::new();
         let init_config = config_handler::get_config().await?;
         Ok(Self {
-            iflow_client: Arc::new(IflowClient::new(client.clone(), &init_config.api_key)),
+            iflow_client: Arc::new(IflowClient::new(client.clone(), &init_config.cookie).await),
             config: Arc::new(init_config),
             reqwest_client: client.clone(),
             users: Arc::new(DashMap::new()),

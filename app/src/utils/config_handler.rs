@@ -25,8 +25,8 @@ pub async fn get_config() -> Result<AppConfig> {
             let config: Value = toml::from_str(&contents).unwrap();
             for (key, value) in config.as_table().unwrap() {
                 match key.as_str() {
-                    "api_key" => {
-                        new_config.api_key = value.as_str().unwrap().to_string();
+                    "cookie" => {
+                        new_config.cookie = value.as_str().unwrap().to_string();
                     }
                     "bot_prompt" => {
                         new_config.bot_prompt = value.as_str().unwrap().to_string();

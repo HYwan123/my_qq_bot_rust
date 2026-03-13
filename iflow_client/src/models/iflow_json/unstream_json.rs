@@ -1,6 +1,22 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct IflowApiKey {
+    pub success: bool,
+    pub code: String,
+    pub message: String,
+    pub data: ApiKeyData,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ApiKeyData {
+    pub has_expired: bool,
+    pub name: String,
+    pub api_key_mask: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IflowSendJson {
     pub model: String,
     pub messages: Vec<AiMessageItem>,
@@ -74,7 +90,7 @@ pub struct ToolMessages {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AiMessages {
     pub content: String,
-    pub tool_calls: Option<Vec<FunctionTool>>
+    pub tool_calls: Option<Vec<FunctionTool>>,
 }
 
 impl AiMessages {
@@ -84,4 +100,48 @@ impl AiMessages {
             tool_calls: None,
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ImageSendJson {
+    pub model: String,
+    pub stream: bool,
+    pub messages: Vec<ImageSendMessage>,
+}
+
+impl ImageSendJson {
+    pub fn new(image_url: &str) -> Self {
+        Self {
+            model: "qwen3-vl-plus".to_string(),
+            stream: false,
+            messages: vec![ImageSendMessage {
+                role: "user".to_string(),
+                content: vec![
+                    ImageContent {
+                        r#type: "text".to_string(),
+                        text: Some("请你详细描述这张图片,然后请使用(用户发送了一张图片,内容:)为开头来描述".to_string()),
+                        image_url: None,
+                    },
+                    ImageContent {
+                        r#type: "image_url".to_string(),
+                        text: None,
+                        image_url: Some(image_url.to_string()),
+                    },
+                ],
+            }],
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ImageSendMessage {
+    pub role: String,
+    pub content: Vec<ImageContent>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ImageContent {
+    pub r#type: String,
+    pub image_url: Option<String>,
+    pub text: Option<String>,
 }
