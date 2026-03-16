@@ -1,6 +1,9 @@
+use std::{os::windows::io::AsRawHandle, thread::sleep};
+
 use crate::models::iflow_json::unstream_json::*;
 use anyhow::{Context, Result};
 use reqwest::{Client, header};
+use serde::Serialize;
 use serde_json::json;
 use tokio::sync::RwLock;
 #[derive(Debug)]
@@ -25,6 +28,62 @@ impl IflowClient {
             cookie: cookie.to_string(),
             api_key: RwLock::new(api_key.to_string()),
         }
+    }
+
+    async fn get_bearer(&self) -> String {
+        format!("Bearer {}", self.api_key.read().await)
+    }
+
+    async fn send_iflow_json_text<T>(&self, json: &T) -> Result<String>
+    where
+        T: Serialize + ?Sized,
+    {
+        Ok(self
+            .client
+            .post(IflowClient::URL)
+            .header(header::AUTHORIZATION, self.get_bearer().await)
+            .header(header::CONTENT_TYPE, "application/json")
+            .json(json)
+            .send()
+            .await?
+            .text()
+            .await?)
+    }
+
+    async fn send_iflow_json<T>(&self, json: &T) -> Result<IflowRecvJson>
+    where
+        T: Serialize + ?Sized,
+    {
+        for _ in 0..3 {
+            let resp = self
+                .client
+                .post(IflowClient::URL)
+                .header(header::AUTHORIZATION, self.get_bearer().await)
+                .header(header::CONTENT_TYPE, "application/json")
+                .json(json)
+                .send()
+                .await?;
+            match resp.json::<IflowRecvJson>().await {
+                Ok(json) => {
+                    return Ok(json);
+                }
+                Err(e) => {
+                    let msg = format!(
+                        "在序列化{}时发送错误,错误:{e},当前apikey:{}",
+                        self.send_iflow_json_text(json).await?,
+                        self.api_key.read().await
+                    );
+                    println!("{msg}");
+                    let new_api_key = Self::get_apikey(&self.client, &self.cookie).await?;
+                    *self.api_key.write().await = new_api_key;
+                    continue;
+                }
+            }
+        }
+        Err(anyhow::anyhow!(
+            "发送iflow json发生错误,当前apikey:{}",
+            self.api_key.read().await
+        ))
     }
 
     pub async fn get_apikey(client: &Client, cookie: &str) -> Result<String> {
@@ -57,11 +116,12 @@ impl IflowClient {
         todo!()
     }
 
-    pub async fn iflow_message_handler( //这是用来处理模型可能出现的function_call的
+    pub async fn iflow_message_handler(
         &self,
         recv_message: IflowRecvJson,
         send_message: IflowSendJson,
     ) -> Result<Vec<IflowRecvJson>> {
+        //这是用来处理模型可能出现的function_call的
         if recv_message.choices.is_empty() {
             return Ok(vec![recv_message]);
         }
@@ -75,7 +135,6 @@ impl IflowClient {
                 }
                 let mut return_result = Vec::new();
                 return_result.push(recv_message.clone());
-                let authorization = format!("Bearer {}", self.api_key.read().await);
                 let mut send = send_message.clone();
                 let exec_result: AiMessageItem = IflowSendJson::exec_func(tools[0].clone()).await;
                 let recv = recv_message.clone();
@@ -114,17 +173,7 @@ impl IflowClient {
                 // 这段代码永远不会执行，可以删除
                 send.messages.push(exec_result);
 
-                let chat_result = self
-                    .client
-                    .post(IflowClient::URL)
-                    .header(header::AUTHORIZATION, authorization)
-                    .header(header::CONTENT_TYPE, "application/json")
-                    .json(&send)
-                    .send()
-                    .await?
-                    .text()
-                    .await?;
-                let recv: IflowRecvJson = serde_json::from_str(&chat_result).unwrap();
+                let recv: IflowRecvJson = self.send_iflow_json(&send).await?;
 
                 return_result.push(recv);
                 return Ok(return_result);
@@ -135,30 +184,7 @@ impl IflowClient {
     pub async fn chat(&self, messages: Vec<AiMessageItem>) -> Result<Vec<String>> {
         for _ in 0..3 {
             let send_json: IflowSendJson = IflowSendJson::new("qwen3-max", messages.clone());
-            let authorization = format!("Bearer {}", self.api_key.read().await);
-            let resp = self
-                .client
-                .post(IflowClient::URL)
-                .header(header::AUTHORIZATION, authorization)
-                .header(header::CONTENT_TYPE, "application/json")
-                .json(&send_json)
-                .send()
-                .await?
-                .text()
-                .await?;
-            let recv_json: IflowRecvJson = match serde_json::from_str(&resp) {
-                Ok(json) => json,
-                Err(e) => {
-                    let msg = format!(
-                        "在序列化{resp}时发送错误,错误:{e},当前apikey:{}",
-                        self.api_key.read().await
-                    );
-                    println!("{msg}");
-                    let new_api_key = Self::get_apikey(&self.client, &self.cookie).await?;
-                    *self.api_key.write().await = new_api_key;
-                    continue;
-                }
-            };
+            let recv_json: IflowRecvJson = self.send_iflow_json(&send_json).await?;
 
             let handled_json = self.iflow_message_handler(recv_json, send_json).await?;
 
@@ -182,43 +208,15 @@ impl IflowClient {
     }
 
     pub async fn get_image_info(&self, image_url: &str) -> Result<String> {
-        let send_json = ImageSendJson::new(image_url);
-        for _ in 0..3 {
-            let authorization = format!("Bearer {}", self.api_key.read().await);
-            let resp = self
-                .client
-                .post(IflowClient::URL)
-                .header(header::AUTHORIZATION, authorization)
-                .header(header::CONTENT_TYPE, "application/json")
-                .json(&send_json)
-                .send()
-                .await?
-                .text()
-                .await?;
-            let recv_json: IflowRecvJson = match serde_json::from_str(&resp) {
-                Ok(json) => json,
-                Err(e) => {
-                    let msg = format!(
-                        "在序列化{resp}时发送错误,错误:{e},当前apikey:{}",
-                        self.api_key.read().await
-                    );
-                    println!("{msg}");
-                    let new_api_key = Self::get_apikey(&self.client, &self.cookie).await?;
-                    *self.api_key.write().await = new_api_key;
-                    continue;
-                }
-            };
-            return Ok(recv_json.choices[0].message.content.clone());
-        }
-        return Err(anyhow::anyhow!("重试3次仍然失败"));
-    
+        let send_json: ImageSendJson = ImageSendJson::new(image_url);
+        let recv_json: IflowRecvJson = self.send_iflow_json(&send_json).await?;
+        return Ok(recv_json.choices[0].message.content.clone());
     }
-
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{env, result};
+    use std::env;
 
     use reqwest::Client;
 
@@ -234,14 +232,16 @@ mod tests {
         };
         println!("{:#?}", result)
     }
-    
+
     #[tokio::test]
     async fn test_image() {
         dotenvy::dotenv().unwrap();
         let cookie = env::var("COOKIE").unwrap();
         let iflow_client = super::IflowClient::new(Client::new(), &cookie).await;
-        let result = iflow_client.get_image_info("https://multimedia.nt.qq.com.cn/download?appid=1406&fileid=EhSjEvg9j59kwucUJu6aVGzF2TRExRje2Agg_goo-6zXlsSckwMyBHByb2RQgLsvWhDxF8h1BP-M2rHj16H58BTzegKniIIBAm5q&spec=0&rkey=CAESMBnpu_h6Y45jAPydtqoghZmiyYeZiYRypQT2X1kdKkdEaVQIy_7Lcp9wSYDkM9ilAg")
-                                            .await.unwrap();
+        let result = iflow_client
+            .get_image_info("https://httpbin.org/image/png")
+            .await
+            .unwrap();
         println!("{result}")
     }
 }

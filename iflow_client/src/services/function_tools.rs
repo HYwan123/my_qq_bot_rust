@@ -2,13 +2,16 @@ use crate::models::iflow_json::unstream_json::{
     AiMessageItem, FunctionInfo, FunctionTool, IflowSendJson, Tool,
     ToolMessages,
 };
+use serde::Serialize;
 
 pub fn get_datetime() -> String {
     println!("我被调用了");
     chrono::prelude::Local::now().to_string()
 }
 
-
+pub trait LlmFunctionTool {
+    async fn call(json: serde_json::Value) -> serde_json::Value;
+}
 
 impl IflowSendJson {
     pub fn new(model: &str, messages: Vec<AiMessageItem>) -> Self {
